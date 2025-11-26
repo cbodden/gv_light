@@ -102,9 +102,9 @@ gv_Action()
                 | ${JQ} '.payload.capabilities.[1].state.value')
             if [[ ${TST_STT} == 1 ]]
             then
-                VALUE=0
+                local VALUE=0
             else
-                VALUE=1
+                local VALUE=1
             fi
         elif [[ ${OPTION} == "online" ]]
         then
@@ -178,19 +178,13 @@ gv_Alert()
         then
             TYPE="devices.capabilities.color_setting"
             INSTANCE="colorRgb"
-            TST_STT=$(\
-                gv_State \
-                | ${JQ} '.payload.capabilities.[6].state.value')
             ## echo $((16#ff0000))
-            VALUE="16711680"
+            local VALUE="16711680"
         elif [[ ${OPTION} == "clear" ]]
         then
             TYPE="devices.capabilities.color_setting"
             INSTANCE="colorTemperatureK"
-            TST_STT=$(\
-                gv_State \
-                | ${JQ} '.payload.capabilities.[7].state.value')
-            VALUE="2700"
+            local VALUE="2700"
         else
             something
         fi
