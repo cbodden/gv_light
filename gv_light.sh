@@ -24,8 +24,8 @@ set -u
 main()
 {
     readonly API_URL="https://openapi.api.govee.com"
+    readonly API_ID_URL="https://developer-api.govee.com/v1/devices"
     readonly CNT_TYPE="application/json"
-    readonly DEV_SKU="H6076"
     readonly DATE="$(date +%s)"
     readonly GV_DIR=$(readlink -m $(dirname $0))
 
@@ -67,8 +67,8 @@ gv_Count()
     DEV_ID_TTL=$(\
     ${CURL} \
         -H "${API_KEY}" \
-        https://developer-api.govee.com/v1/devices \
-        | ${JQ} '.data.devices[].device ' \
+        ${API_ID_URL} \
+        | ${JQ} -r '.data.devices[] | (.device + "," + .model)'
     )
 }
 
@@ -90,7 +90,8 @@ gv_Action()
     gv_Count
     for ITER in ${DEV_ID_TTL}
     do
-        DEV_ID=$(echo ${ITER} | tr -d '"')
+        DEV_ID=${ITER%%,*}
+        DEV_SKU=${ITER##*,}
 
         if [[ ${OPTION} == "power" ]]
         then
@@ -155,7 +156,8 @@ gv_Info()
     gv_Count
     for ITER in ${DEV_ID_TTL}
     do
-        DEV_ID=$(echo ${ITER} | tr -d '"')
+        DEV_ID=${ITER%%,*}
+        DEV_SKU=${ITER##*,}
 
         ${CURL} \
             -X POST \
@@ -174,7 +176,8 @@ gv_Alert()
     gv_Count
     for ITER in ${DEV_ID_TTL}
     do
-        DEV_ID=$(echo ${ITER} | tr -d '"')
+        DEV_ID=${ITER%%,*}
+        DEV_SKU=${ITER##*,}
 
         if [[ ${OPTION} == "alert" ]]
         then
