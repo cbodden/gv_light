@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 #===============================================================================
 #
-#          FILE: 
-#         USAGE: ./
+#          FILE: gv_light.sh
+#         USAGE: ./gv_light.sh
 #   DESCRIPTION:
-#       OPTIONS: -b, -f, -i, -l, & -t
-#  REQUIREMENTS: curl jq 
+#       OPTIONS: -a, -b, -i, -o, and -p
+#  REQUIREMENTS: curl jq
 #          BUGS: probably
 #         NOTES:
 #        AUTHOR: Cesar Bodden (), cesar@poa.nyc
@@ -64,16 +64,16 @@ main()
 gv_Count()
 {
     DEV_ID_TTL=$(\
-    curl \
+    ${CURL} \
         -H "${API_KEY}" \
         https://developer-api.govee.com/v1/devices \
-        | jq '.data.devices[].device ' \
+        | ${JQ} '.data.devices[].device ' \
     )
 }
 
 gv_State()
 {
-    curl \
+    ${CURL} \
         -X POST \
         -H "Content-Type: ${CNT_TYPE}" \
         -H "${API_KEY}" \
@@ -95,7 +95,7 @@ gv_Action()
             INSTANCE="powerSwitch"
             TST_STT=$(\
                 gv_State \
-                | jq '.payload.capabilities.[1].state.value')
+                | ${JQ} '.payload.capabilities.[1].state.value')
             if [ ${TST_STT} == 1 ]
             then
                 VALUE=0
@@ -108,7 +108,7 @@ gv_Action()
             INSTANCE="online"
             local TST_STT=$(\
                 gv_State \
-                | jq '.payload.capabilities.[0].state.value')
+                | ${JQ} '.payload.capabilities.[0].state.value')
             if [ ${TST_STT} == false ]
             then
                 VALUE=true
@@ -119,7 +119,7 @@ gv_Action()
             INSTANCE="brightness"
             local TST_STT=$(\
                 gv_State \
-                | jq '.payload.capabilities.[3].state.value')
+                | ${JQ} '.payload.capabilities.[3].state.value')
             if [ ${BTT} == "reset" ]
             then
                 local SET_BTT=100
@@ -137,7 +137,7 @@ gv_Action()
             something
         fi
 
-        curl \
+        ${CURL} \
             -s -X POST \
             -H "Content-Type: ${CNT_TYPE}" \
             -H "${API_KEY}" \
@@ -153,13 +153,13 @@ gv_Info()
     do
         DEV_ID=$(echo ${ITER} | tr -d '"')
 
-        curl \
+        ${CURL} \
             -X POST \
             -H "Content-Type: ${CNT_TYPE}" \
             -H "${API_KEY}" \
             --data "$(generate_state_data)" \
             ${API_URL}/router/api/v1/device/state \
-            | jq '.'
+            | ${JQ} '.'
     done
 }
 
@@ -177,7 +177,7 @@ gv_Alert()
             INSTANCE="colorRgb"
             TST_STT=$(\
                 gv_State \
-                | jq '.payload.capabilities.[6].state.value')
+                | ${JQ} '.payload.capabilities.[6].state.value')
             ## echo $((16#ff0000))
             VALUE="16711680"
         elif [[ ${OPTION} == "clear" ]]
@@ -186,13 +186,13 @@ gv_Alert()
             INSTANCE="colorTemperatureK"
             TST_STT=$(\
                 gv_State \
-                | jq '.payload.capabilities.[7].state.value')
+                | ${JQ} '.payload.capabilities.[7].state.value')
             VALUE="2700"
         else
             something
         fi
 
-        curl \
+        ${CURL} \
             -s -X POST \
             -H "Content-Type: ${CNT_TYPE}" \
             -H "${API_KEY}" \
@@ -221,7 +221,7 @@ EOF
 
 generate_state_data()
 {
-    cat <<EOF
+  cat <<EOF
 {
 "requestId": "${DATE}",
 "payload": {
@@ -231,6 +231,10 @@ generate_state_data()
 }
 EOF
 }
+
+clear
+
+main
 
 ## option selection 
 while getopts ":a:b:iop" OPT
@@ -276,5 +280,3 @@ do
             ;;
     esac
 done
-
-main
