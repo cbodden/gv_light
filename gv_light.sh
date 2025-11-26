@@ -21,30 +21,30 @@ set -o nounset
 set -o pipefail
 set -u
 
-API_URL="https://openapi.api.govee.com"
-CNT_TYPE="application/json"
-DEV_SKU="H6076"
-DATE="$(date +%s)"
-GV_DIR=$(readlink -m $(dirname $0))
-
-## check if conf file exists then source
-## content : API_KEY="Govee-API-Key:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-if [ -f "${GV_DIR}/.gv_light.conf" ];
-then
-    source ${GV_DIR}/.gv_light.conf
-else
-    printf "%s\n" \
-        ". . .CONF not found. . ."
-    exit 1
-fi
-
 main()
 {
+    readonly API_URL="https://openapi.api.govee.com"
+    readonly CNT_TYPE="application/json"
+    readonly DEV_SKU="H6076"
+    readonly DATE="$(date +%s)"
+    readonly GV_DIR=$(readlink -m $(dirname $0))
+
+    ## check if conf file exists then source
+    ## content : API_KEY="Govee-API-Key:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+    if [[ -f "${GV_DIR}/.gv_light.conf" ]]
+    then
+        source ${GV_DIR}/.gv_light.conf
+    else
+        printf "%s\n" \
+            ". . .CONF not found. . ."
+        exit 1
+    fi
+
     ## check if deps exist
     local _DEPS="curl jq"
     for ITER in ${_DEPS}
     do
-        if [ -z "$(which ${ITER} 2>/dev/null)" ]
+        if [[ -z "$(which ${ITER} 2>/dev/null)" ]]
         then
             printf "%s\n" \
                 ". . .${ITER} not found. . ."
@@ -63,6 +63,7 @@ main()
 
 gv_Count()
 {
+    ## count all devices and map ID's
     DEV_ID_TTL=$(\
     ${CURL} \
         -H "${API_KEY}" \
@@ -73,6 +74,7 @@ gv_Count()
 
 gv_State()
 {
+    ## pull state of specific id
     ${CURL} \
         -X POST \
         -H "Content-Type: ${CNT_TYPE}" \
@@ -83,6 +85,7 @@ gv_State()
 
 gv_Action()
 {
+    ## action function
     local OPTION=${1}
     gv_Count
     for ITER in ${DEV_ID_TTL}
@@ -96,7 +99,7 @@ gv_Action()
             TST_STT=$(\
                 gv_State \
                 | ${JQ} '.payload.capabilities.[1].state.value')
-            if [ ${TST_STT} == 1 ]
+            if [[ ${TST_STT} == 1 ]]
             then
                 VALUE=0
             else
@@ -109,7 +112,7 @@ gv_Action()
             local TST_STT=$(\
                 gv_State \
                 | ${JQ} '.payload.capabilities.[0].state.value')
-            if [ ${TST_STT} == false ]
+            if [[ ${TST_STT} == false ]]
             then
                 VALUE=true
             fi
@@ -120,13 +123,13 @@ gv_Action()
             local TST_STT=$(\
                 gv_State \
                 | ${JQ} '.payload.capabilities.[3].state.value')
-            if [ ${BTT} == "reset" ]
+            if [[ ${BTT} == "reset" ]]
             then
                 local SET_BTT=100
-            elif [ ${BTT} == "dec" ]
+            elif [[ ${BTT} == "dec" ]]
             then
                 local SET_BTT=$( expr ${TST_STT} - 20 )
-            elif [ ${BTT} == "inc" ]
+            elif [[ ${BTT} == "inc" ]]
             then
                 local SET_BTT=$( expr ${TST_STT} + 20 )
             else
@@ -148,6 +151,7 @@ gv_Action()
 
 gv_Info()
 {
+    ## parse info of ID's
     gv_Count
     for ITER in ${DEV_ID_TTL}
     do
@@ -165,7 +169,8 @@ gv_Info()
 
 gv_Alert()
 {
-   local OPTION=${BTT}
+    ## alert actions
+    local OPTION=${BTT}
     gv_Count
     for ITER in ${DEV_ID_TTL}
     do
@@ -182,7 +187,7 @@ gv_Alert()
             VALUE="16711680"
         elif [[ ${OPTION} == "clear" ]]
         then
-             TYPE="devices.capabilities.color_setting"
+            TYPE="devices.capabilities.color_setting"
             INSTANCE="colorTemperatureK"
             TST_STT=$(\
                 gv_State \
@@ -242,8 +247,8 @@ do
     case "${OPT}" in
         'a')
             if \
-                [ ${OPTARG} == "alert" ] \
-                || [ ${OPTARG} == "clear" ]
+                [[ ${OPTARG} == "alert" ]] \
+                || [[ ${OPTARG} == "clear" ]]
             then
                 readonly BTT="${OPTARG}"
             else
@@ -254,9 +259,9 @@ do
             ;;
         'b')
             if \
-                [ ${OPTARG} == "inc" ] \
-                || [ ${OPTARG} == "dec" ] \
-                || [ ${OPTARG} == "reset" ]
+                [[ ${OPTARG} == "inc" ]] \
+                || [[ ${OPTARG} == "dec" ]] \
+                || [[ ${OPTARG} == "reset" ]]
             then
                 readonly BTT="${OPTARG}"
             else
