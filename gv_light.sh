@@ -53,12 +53,6 @@ main()
             readonly ${ITER^^}="$(which ${ITER})"
         fi
     done
-
-    ## tmp file for json output
-    readonly CURL_JSON=$(mktemp -t curl_json_lights.XXXXXX)
-
-    ## clean up left over files on exit
-    trap "rm -f ${CURL_JSON}" 0 1 2 15
 }
 
 gv_Count()
@@ -95,9 +89,9 @@ gv_Action()
 
         if [[ ${OPTION} == "power" ]]
         then
-            TYPE="devices.capabilities.on_off"
-            INSTANCE="powerSwitch"
-            TST_STT=$(\
+            local TYPE="devices.capabilities.on_off"
+            local INSTANCE="powerSwitch"
+            local TST_STT=$(\
                 gv_State \
                 | ${JQ} '.payload.capabilities.[1].state.value')
             if [[ ${TST_STT} == 1 ]]
@@ -108,19 +102,19 @@ gv_Action()
             fi
         elif [[ ${OPTION} == "online" ]]
         then
-            TYPE="devices.capabilities.online"
-            INSTANCE="online"
+            local TYPE="devices.capabilities.online"
+            local INSTANCE="online"
             local TST_STT=$(\
                 gv_State \
                 | ${JQ} '.payload.capabilities.[0].state.value')
             if [[ ${TST_STT} == false ]]
             then
-                VALUE=true
+                local VALUE=true
             fi
         elif [[ ${OPTION} == "bright" ]]
         then
-            TYPE="devices.capabilities.range"
-            INSTANCE="brightness"
+            local TYPE="devices.capabilities.range"
+            local INSTANCE="brightness"
             local TST_STT=$(\
                 gv_State \
                 | ${JQ} '.payload.capabilities.[3].state.value')
@@ -176,17 +170,15 @@ gv_Alert()
 
         if [[ ${OPTION} == "alert" ]]
         then
-            TYPE="devices.capabilities.color_setting"
-            INSTANCE="colorRgb"
+            local TYPE="devices.capabilities.color_setting"
+            local INSTANCE="colorRgb"
             ## echo $((16#ff0000))
             local VALUE="16711680"
         elif [[ ${OPTION} == "clear" ]]
         then
-            TYPE="devices.capabilities.color_setting"
-            INSTANCE="colorTemperatureK"
+            local TYPE="devices.capabilities.color_setting"
+            local INSTANCE="colorTemperatureK"
             local VALUE="2700"
-        else
-            something
         fi
 
         ${CURL} \
