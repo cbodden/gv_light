@@ -126,19 +126,14 @@ gv_Action()
                 | ${JQ} '.payload.capabilities.[3].state.value')
             if [[ ${BTT} == "reset" ]]
             then
-                local SET_BTT=100
+                local VALUE=100
             elif [[ ${BTT} == "dec" ]]
             then
-                local SET_BTT=$( expr ${TST_STT} - 20 )
+                local VALUE=$( expr ${TST_STT} - 20 )
             elif [[ ${BTT} == "inc" ]]
             then
-                local SET_BTT=$( expr ${TST_STT} + 20 )
-            else
-                something
+                local VALUE=$( expr ${TST_STT} + 20 )
             fi
-                VALUE=${SET_BTT}
-        else
-            something
         fi
 
         ${CURL} \
