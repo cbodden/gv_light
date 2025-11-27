@@ -249,11 +249,11 @@ generate_state_data()
 {
   cat <<EOF
 {
-"requestId": "${DATE}",
-"payload": {
+  "requestId": "${DATE}",
+  "payload": {
     "sku": "${DEV_SKU}",
     "device": "${DEV_ID}"
-    }
+  }
 }
 EOF
 }
