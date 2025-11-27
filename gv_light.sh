@@ -194,6 +194,12 @@ gv_Alert()
     ## alert actions
     local OPTION=${BTT}
     gv_Count
+    DEV_ID_TTL=$(\
+        ${JQ} \
+            -r '.data.devices[] | (.device + "," + .model)' \
+            ${CURL_JSON_CNT} \
+    )
+
     for ITER in ${DEV_ID_TTL}
     do
         DEV_ID=${ITER%%,*}
