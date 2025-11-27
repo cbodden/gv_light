@@ -55,21 +55,20 @@ main()
     done
 
     ## tmp file for json output
-    readonly CURL_JSON=$(mktemp -t curl_json_lights.XXXXXX)
+    readonly CURL_JSON_CNT=$(mktemp -t curl_json_cnt.XXXXXX)
+    readonly CURL_JSON_STT=$(mktemp -t curl_json_stt.XXXXXX)
 
     ## clean up left over files on exit
-    trap "rm -f ${CURL_JSON}" 0 1 2 15
+    trap "rm -f ${CURL_JSON_CNT} ${CURL_JSON_STT} " 0 1 2 15
 }
 
 gv_Count()
 {
-    ## count all devices and map ID's
-    DEV_ID_TTL=$(\
+    ## count all devices and map ID's and model numbers
     ${CURL} \
         -H "${API_KEY}" \
         ${API_ID_URL} \
-        | ${JQ} -r '.data.devices[] | (.device + "," + .model)'
-    )
+        >> ${CURL_JSON_CNT}
 }
 
 gv_State()
@@ -80,7 +79,8 @@ gv_State()
         -H "Content-Type: ${CNT_TYPE}" \
         -H "${API_KEY}" \
         --data "$(generate_state_data)" \
-        ${API_URL}/router/api/v1/device/state
+        ${API_URL}/router/api/v1/device/state \
+        >> ${CURL_JSON_STT}
 }
 
 gv_Action()
@@ -88,6 +88,12 @@ gv_Action()
     ## action function
     local OPTION=${1}
     gv_Count
+    DEV_ID_TTL=$(\
+        ${JQ} \
+            -r '.data.devices[] | (.device + "," + .model)' \
+            ${CURL_JSON_CNT} \
+    )
+
     for ITER in ${DEV_ID_TTL}
     do
         DEV_ID=${ITER%%,*}
@@ -98,8 +104,10 @@ gv_Action()
             local TYPE="devices.capabilities.on_off"
             local INSTANCE="powerSwitch"
             local TST_STT=$(\
-                gv_State \
-                | ${JQ} '.payload.capabilities.[1].state.value')
+                ${JQ} \
+                    -r '.payload.capabilities.[1].state.value' \
+                    ${CURL_JSON_STT} \
+                )
             if [[ ${TST_STT} == 1 ]]
             then
                 local VALUE=0
@@ -111,8 +119,10 @@ gv_Action()
             local TYPE="devices.capabilities.online"
             local INSTANCE="online"
             local TST_STT=$(\
-                gv_State \
-                | ${JQ} '.payload.capabilities.[0].state.value')
+                ${JQ} \
+                    -r '.payload.capabilities.[0].state.value' \
+                    ${CURL_JSON_STT} \
+                )
             if [[ ${TST_STT} == false ]]
             then
                 local VALUE=true
@@ -122,8 +132,10 @@ gv_Action()
             local TYPE="devices.capabilities.range"
             local INSTANCE="brightness"
             local TST_STT=$(\
-                gv_State \
-                | ${JQ} '.payload.capabilities.[3].state.value')
+                ${JQ} \
+                    -r '.payload.capabilities.[3].state.value' \
+                    ${CURL_JSON_STT} \
+                )
             if [[ ${BTT} == "reset" ]]
             then
                 local VALUE=100
@@ -134,6 +146,13 @@ gv_Action()
             then
                 local VALUE=$( expr ${TST_STT} + 20 )
             fi
+        elif [[ ${OPTION} == "color" ]]
+        then
+            local TYPE="devices.capabilities.color_setting"
+            local INSTANCE="colorRgb"
+            local SET_COLOR="$( printf %d/\n 0x${COLOR} )"
+            ## echo $((16#ff0000))
+            local VALUE="${SET_COLOR}"
         fi
 
         ${CURL} \
@@ -149,6 +168,12 @@ gv_Info()
 {
     ## parse info of ID's
     gv_Count
+    DEV_ID_TTL=$(\
+        ${JQ} \
+            -r '.data.devices[] | (.device + "," + .model)' \
+            ${CURL_JSON_CNT} \
+    )
+
     for ITER in ${DEV_ID_TTL}
     do
         DEV_ID=${ITER%%,*}
@@ -232,7 +257,7 @@ clear
 main
 
 ## option selection 
-while getopts ":a:b:iop" OPT
+while getopts ":a:b:c:iop" OPT
 do
     case "${OPT}" in
         'a')
@@ -259,6 +284,16 @@ do
                 exit 0
             fi
             gv_Action bright
+            ;;
+        'c')
+            if ! [[ ${OPTARG} =~ ^[0-9A-F]{6}$ ]]
+            then
+                readonly COLOR="${OPTARG}"
+            else
+                echo WRONG
+                exit 1
+            fi
+            gv_Action color
             ;;
         'i')
             gv_Info
