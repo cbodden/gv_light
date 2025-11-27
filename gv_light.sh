@@ -53,6 +53,12 @@ main()
             readonly ${ITER^^}="$(which ${ITER})"
         fi
     done
+
+    ## tmp file for json output
+    readonly CURL_JSON=$(mktemp -t curl_json_lights.XXXXXX)
+
+    ## clean up left over files on exit
+    trap "rm -f ${CURL_JSON}" 0 1 2 15
 }
 
 gv_Count()
