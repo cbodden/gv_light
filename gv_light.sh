@@ -258,8 +258,8 @@ generate_state_data()
 EOF
 }
 
+## clearing for main options
 clear
-
 main
 
 ## option selection 
@@ -274,7 +274,7 @@ do
                 readonly BTT="${OPTARG}"
             else
                 echo WRONG
-                exit 0
+                exit 1
             fi
             gv_Alert
             ;;
@@ -287,7 +287,7 @@ do
                 readonly BTT="${OPTARG}"
             else
                 echo WRONG
-                exit 0
+                exit 1
             fi
             gv_Action bright
             ;;
@@ -312,7 +312,7 @@ do
             ;;
         *)
             echo "WRONG"
-            exit 0
+            exit 1
             ;;
     esac
 done
