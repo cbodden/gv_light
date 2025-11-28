@@ -3,15 +3,15 @@
 #
 #          FILE: gv_light.sh
 #         USAGE: ./gv_light.sh
-#   DESCRIPTION:
-#       OPTIONS: -a, -b, -i, -o, and -p
+#   DESCRIPTION: Script to control Govee lights
+#       OPTIONS: -a, -b, -c, -i, and -p
 #  REQUIREMENTS: curl jq
 #          BUGS: probably
 #         NOTES:
 #        AUTHOR: Cesar Bodden (), cesar@poa.nyc
 #  ORGANIZATION: pissedoffadmins.com
 #       CREATED: 25-NOV-25
-#      REVISION: 1
+#      REVISION: 2
 #===============================================================================
 
 LC_ALL=C
