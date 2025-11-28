@@ -179,10 +179,11 @@ gv_Info()
         done
     elif [[ ${OPTION} == list ]]
     then
+        clear
         gv_Count
-            ${JQ} \
-                -r '.data.devices[] | (.model + " " + .deviceName)' \
-                ${CURL_JSON_CNT}
+        ${JQ} \
+            -r '.data.devices[] | (.model + " " + .deviceName)' \
+            ${CURL_JSON_CNT}
     fi
 }
 
