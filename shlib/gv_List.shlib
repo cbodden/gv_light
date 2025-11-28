@@ -1,8 +1,0 @@
-gv_List()
-{
-    ## list all devices, ID's, and model numbers
-    ${CURL} \
-        -s -H "${API_KEY}" \
-        ${API_ID_URL} \
-        >> ${CURL_JSON_CNT}
-}
