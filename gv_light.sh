@@ -139,7 +139,6 @@ gv_Action()
             local TYPE="devices.capabilities.color_setting"
             local INSTANCE="colorRgb"
             local SET_COLOR="$( printf %d/\n 0x${COLOR} )"
-            ## echo $((16#ff0000))
             local VALUE="${SET_COLOR}"
         fi
 
@@ -154,27 +153,37 @@ gv_Action()
 
 gv_Info()
 {
-    ## parse info of ID's
-    gv_Count
-    DEV_ID_TTL=$(\
-        ${JQ} \
-            -r '.data.devices[] | (.device + "," + .model)' \
-            ${CURL_JSON_CNT} \
-    )
+    ## parse info of ID's detailed or short list
+    local OPTION=${1}
+    if [[ ${OPTION} == detail ]]
+    then
+        gv_Count
+        DEV_ID_TTL=$(\
+            ${JQ} \
+                -r '.data.devices[] | (.device + "," + .model)' \
+                ${CURL_JSON_CNT} \
+        )
 
-    for ITER in ${DEV_ID_TTL}
-    do
-        local DEV_ID=${ITER%%,*}
-        local DEV_SKU=${ITER##*,}
+        for ITER in ${DEV_ID_TTL}
+        do
+            local DEV_ID=${ITER%%,*}
+            local DEV_SKU=${ITER##*,}
 
-        ${CURL} \
-            -s -X POST \
-            -H "Content-Type: ${CNT_TYPE}" \
-            -H "${API_KEY}" \
-            --data "$(generate_state_data)" \
-            ${API_URL}/router/api/v1/device/state \
-            | ${JQ} '.'
-    done
+            ${CURL} \
+                -s -X POST \
+                -H "Content-Type: ${CNT_TYPE}" \
+                -H "${API_KEY}" \
+                --data "$(generate_state_data)" \
+                ${API_URL}/router/api/v1/device/state \
+                | ${JQ} '.'
+        done
+    elif [[ ${OPTION} == list ]]
+    then
+        gv_Count
+            ${JQ} \
+                -r '.data.devices[] | (.model + " " + .deviceName)' \
+                ${CURL_JSON_CNT}
+    fi
 }
 
 gv_Alert()
@@ -312,7 +321,7 @@ clear
 main
 
 ## option selection 
-while getopts ":a:b:c:iop" OPT
+while getopts ":a:b:c:i:op" OPT
 do
     case "${OPT}" in
         'a')
@@ -354,7 +363,17 @@ do
             gv_Action color
             ;;
         'i')
-            gv_Info
+            if \
+                [[ ${OPTARG} == "detail" ]] \
+                || [[ ${OPTARG} == "list" ]]
+            then
+                readonly BTT="${OPTARG}"
+            else
+                _USAGE \
+                    less
+                exit 1
+            fi
+            gv_Info ${BTT}
             ;;
         'p')
             gv_Action power

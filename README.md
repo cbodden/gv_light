@@ -1,5 +1,4 @@
 # gv_light![Unsupported](https://img.shields.io/badge/development_status-in_progress-green.svg)
-##[![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
 
 gv_light.sh
