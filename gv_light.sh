@@ -115,19 +115,6 @@ gv_Action()
             else
                 readonly VALUE=1
             fi
-        elif [[ ${OPTION} == "online" ]]
-        then
-            readonly TYPE="devices.capabilities.online"
-            readonly INSTANCE="online"
-            local TST_STT=$(\
-                ${JQ} \
-                    -r '.payload.capabilities.[0].state.value' \
-                    ${CURL_JSON_STT} \
-                )
-            if [[ ${TST_STT} == false ]]
-            then
-                readonly VALUE=true
-            fi
         elif [[ ${OPTION} == "bright" ]]
         then
             readonly TYPE="devices.capabilities.range"
@@ -368,9 +355,6 @@ do
             ;;
         'i')
             gv_Info
-            ;;
-        'o')
-            gv_Action online
             ;;
         'p')
             gv_Action power
