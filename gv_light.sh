@@ -353,7 +353,9 @@ do
             gv_Action bright
             ;;
         'c')
-            if ! [[ ${OPTARG} =~ ^[0-9A-F]{6}$ ]]
+            if \
+                ! [[ ${OPTARG} =~ ^[0-9A-F]{6}$ ]] \
+                && [[ ${#OPTARG} -eq 6 ]]
             then
                 readonly COLOR="${OPTARG}"
             else
