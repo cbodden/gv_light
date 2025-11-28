@@ -207,7 +207,6 @@ gv_Alert()
         then
             local TYPE="devices.capabilities.color_setting"
             local INSTANCE="colorRgb"
-            ## echo $((16#ff0000))
             local VALUE="16711680"
         elif [[ ${OPTION} == "clear" ]]
         then
