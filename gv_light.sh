@@ -11,7 +11,7 @@
 #        AUTHOR: Cesar Bodden (), cesar@poa.nyc
 #  ORGANIZATION: pissedoffadmins.com
 #       CREATED: 25-NOV-25
-#      REVISION: 2
+#      REVISION: 3
 #===============================================================================
 
 LC_ALL=C
@@ -55,266 +55,25 @@ main()
         fi
     done
 
+    ## check if shlibs exist then source
+    if [[ -z "$( ls -A "${GV_DIR}/shlib/" )" ]]
+    then
+        printf "%s\n" \
+            ". . .shlibs not found. . ."
+        exit 1
+    else
+        for ITER in ${GV_DIR}/shlib/*.shlib
+        do
+            source ${ITER}
+        done
+    fi
+
     ## tmp file for json output
     readonly CURL_JSON_CNT=$(mktemp -t curl_json_cnt.XXXXXX)
     readonly CURL_JSON_STT=$(mktemp -t curl_json_stt.XXXXXX)
 
     ## clean up left over files on exit
     trap "rm -f ${CURL_JSON_CNT} ${CURL_JSON_STT} " 0 1 2 15
-}
-
-gv_List()
-{
-    ## list all devices, ID's, and model numbers
-    ${CURL} \
-        -s -H "${API_KEY}" \
-        ${API_ID_URL} \
-        >> ${CURL_JSON_CNT}
-}
-
-gv_State()
-{
-    ## pull state of specific id
-    ${CURL} \
-        -s -X POST \
-        -H "Content-Type: ${CNT_TYPE}" \
-        -H "${API_KEY}" \
-        --data "$(generate_state_data)" \
-        ${API_URL}/router/api/v1/device/state \
-        >> ${CURL_JSON_STT}
-}
-
-gv_Action()
-{
-    ## action function
-    local OPTION=${1}
-    gv_List
-    DEV_ID_TTL=$(\
-        ${JQ} \
-            -r '.data.devices[] | (.device + "," + .model)' \
-            ${CURL_JSON_CNT} \
-    )
-
-    for ITER in ${DEV_ID_TTL}
-    do
-        local DEV_ID=${ITER%%,*}
-        local DEV_SKU=${ITER##*,}
-
-        if [[ ${OPTION} == "power" ]]
-        then
-            local TYPE="devices.capabilities.on_off"
-            local INSTANCE="powerSwitch"
-            local TST_STT=$(\
-                ${JQ} \
-                    -r '.payload.capabilities.[1].state.value' \
-                    ${CURL_JSON_STT} \
-                )
-            if [[ ${TST_STT} == 1 ]]
-            then
-                local VALUE=0
-            else
-                local VALUE=1
-            fi
-        elif [[ ${OPTION} == "bright" ]]
-        then
-            local TYPE="devices.capabilities.range"
-            local INSTANCE="brightness"
-            local TST_STT=$(\
-                ${JQ} \
-                    -r '.payload.capabilities.[3].state.value' \
-                    ${CURL_JSON_STT} \
-                )
-            if [[ ${BTT} == "reset" ]]
-            then
-                local VALUE=100
-            elif [[ ${BTT} == "dec" ]]
-            then
-                local VALUE=$( expr ${TST_STT} - 20 )
-            elif [[ ${BTT} == "inc" ]]
-            then
-                local VALUE=$( expr ${TST_STT} + 20 )
-            fi
-        elif [[ ${OPTION} == "color" ]]
-        then
-            local TYPE="devices.capabilities.color_setting"
-            local INSTANCE="colorRgb"
-            local SET_COLOR="$( printf %d/\n 0x${COLOR} )"
-            local VALUE="${SET_COLOR}"
-        fi
-
-        ${CURL} \
-            -s -X POST \
-            -H "Content-Type: ${CNT_TYPE}" \
-            -H "${API_KEY}" \
-            --data "$(generate_json_data)" \
-            ${API_URL}/router/api/v1/device/control
-    done
-}
-
-gv_Info()
-{
-    ## parse info of ID's detailed or short list
-    local OPTION=${1}
-    if [[ ${OPTION} == detail ]]
-    then
-        gv_List
-        DEV_ID_TTL=$(\
-            ${JQ} \
-                -r '.data.devices[] | (.device + "," + .model)' \
-                ${CURL_JSON_CNT} \
-        )
-
-        for ITER in ${DEV_ID_TTL}
-        do
-            local DEV_ID=${ITER%%,*}
-            local DEV_SKU=${ITER##*,}
-
-            ${CURL} \
-                -s -X POST \
-                -H "Content-Type: ${CNT_TYPE}" \
-                -H "${API_KEY}" \
-                --data "$(generate_state_data)" \
-                ${API_URL}/router/api/v1/device/state \
-                | ${JQ} '.'
-        done
-    elif [[ ${OPTION} == list ]]
-    then
-        clear
-        gv_List
-        ${JQ} \
-            -r '.data.devices[] | (.model + " " + .deviceName)' \
-            ${CURL_JSON_CNT}
-    fi
-}
-
-gv_Alert()
-{
-    ## alert actions
-    local OPTION=${BTT}
-    gv_List
-    DEV_ID_TTL=$(\
-        ${JQ} \
-            -r '.data.devices[] | (.device + "," + .model)' \
-            ${CURL_JSON_CNT} \
-    )
-
-    for ITER in ${DEV_ID_TTL}
-    do
-        local DEV_ID=${ITER%%,*}
-        local DEV_SKU=${ITER##*,}
-
-        if [[ ${OPTION} == "alert" ]]
-        then
-            local TYPE="devices.capabilities.color_setting"
-            local INSTANCE="colorRgb"
-            local VALUE="16711680"
-        elif [[ ${OPTION} == "clear" ]]
-        then
-            local TYPE="devices.capabilities.color_setting"
-            local INSTANCE="colorTemperatureK"
-            local VALUE="2700"
-        fi
-
-        ${CURL} \
-            -s -X POST \
-            -H "Content-Type: ${CNT_TYPE}" \
-            -H "${API_KEY}" \
-            --data "$(generate_json_data)" \
-            ${API_URL}/router/api/v1/device/control
-    done
-}
-
-generate_json_data()
-{
-  cat <<EOF
-{
-  "requestId": "${DATE}",
-  "payload": {
-    "sku": "${DEV_SKU}",
-    "device": "${DEV_ID}",
-    "capability": {
-      "type": "${TYPE}",
-      "instance": "${INSTANCE}",
-      "value": ${VALUE}
-    }
-  }
-}
-EOF
-}
-
-generate_state_data()
-{
-  cat <<EOF
-{
-  "requestId": "${DATE}",
-  "payload": {
-    "sku": "${DEV_SKU}",
-    "device": "${DEV_ID}"
-  }
-}
-EOF
-}
-
-function _USAGE()
-{
-    clear
-echo -e "
-NAME
-    ${GV_NAME}
-
-SYNOPSIS
-    ${GV_NAME} [OPTION]...
-
-DESCRIPTION
-    This script controls functionality of one or multiple internet connected
-    Govee lights. It can be enabled in to be used on cron, mapped to specific
-    keyboard shortcuts, run from the command line, or added / called from other
-    scripts to change light colors in case of alerts or as notifiers.
-
-OPTIONS
-
-    -a [alert | clear]
-            This option will set all the lights into an alert mode (red if 
-            alert specified) and then clear them if clear is passed.
-
-    -b [inc | dec | reset]
-            This option when passed with either inc (increase), dec (decrease),
-            or reset (set lights back to 100%) will control brightness from 
-            1 - 100 in increments of 20.
-
-    -c [hex color code]
-            This option allows setting all the lights to the same defined 
-            color in hex rgb of format "FFFFFF" with the range of 000001 - 
-            FFFFFF. 
-
-            Hex code must be defined as a 6 character number.
-
-    -i [list | detail]
-            This option gives you information on all lamps connected in JSON
-            output format if you select "detail". If "list" is selected it will
-            just output per line the model and name of each device.
- 
-    -p
-            This option toggles power on or off.
-
-Examples
-    Toggle light on / off :
-
-            ./gv_light.sh -p
-
-    Set all lamps to red :
-
-            ./gv_light.sh -c 00ff00
-
-Requirement
-    This script requires that the ".gv_light.conf" be configured with the
-    contents containing your API key (google it) in the format similar to below
-    where the "XXXXXXXXXXXXXXXXXXXXXXXXXX" is replaced with the API key :
-
-            API_KEY="Govee-API-Key:XXXXXXXXXXXXXXXXXXXXXXXXXX"
-
-    This script also requires that both JQ and cURL be installed.
-    "
 }
 
 ## clearing for main options

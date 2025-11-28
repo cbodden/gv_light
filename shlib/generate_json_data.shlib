@@ -1,0 +1,17 @@
+generate_json_data()
+{
+  cat <<EOF
+{
+  "requestId": "${DATE}",
+  "payload": {
+    "sku": "${DEV_SKU}",
+    "device": "${DEV_ID}",
+    "capability": {
+      "type": "${TYPE}",
+      "instance": "${INSTANCE}",
+      "value": ${VALUE}
+    }
+  }
+}
+EOF
+}

@@ -1,0 +1,35 @@
+gv_Info()
+{
+    ## parse info of ID's detailed or short list
+    local OPTION=${1}
+    if [[ ${OPTION} == detail ]]
+    then
+        gv_List
+        DEV_ID_TTL=$(\
+            ${JQ} \
+                -r '.data.devices[] | (.device + "," + .model)' \
+                ${CURL_JSON_CNT} \
+        )
+
+        for ITER in ${DEV_ID_TTL}
+        do
+            local DEV_ID=${ITER%%,*}
+            local DEV_SKU=${ITER##*,}
+
+            ${CURL} \
+                -s -X POST \
+                -H "Content-Type: ${CNT_TYPE}" \
+                -H "${API_KEY}" \
+                --data "$(generate_state_data)" \
+                ${API_URL}/router/api/v1/device/state \
+                | ${JQ} '.'
+        done
+    elif [[ ${OPTION} == list ]]
+    then
+        clear
+        gv_List
+        ${JQ} \
+            -r '.data.devices[] | (.model + " " + .deviceName)' \
+            ${CURL_JSON_CNT}
+    fi
+}

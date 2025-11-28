@@ -1,0 +1,11 @@
+gv_State()
+{
+    ## pull state of specific id
+    ${CURL} \
+        -s -X POST \
+        -H "Content-Type: ${CNT_TYPE}" \
+        -H "${API_KEY}" \
+        --data "$(generate_state_data)" \
+        ${API_URL}/router/api/v1/device/state \
+        >> ${CURL_JSON_STT}
+}

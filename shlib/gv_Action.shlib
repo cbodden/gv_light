@@ -1,0 +1,66 @@
+gv_Action()
+{
+    ## action function
+    local OPTION=${1}
+    gv_List
+    DEV_ID_TTL=$(\
+        ${JQ} \
+            -r '.data.devices[] | (.device + "," + .model)' \
+            ${CURL_JSON_CNT} \
+    )
+
+    for ITER in ${DEV_ID_TTL}
+    do
+        local DEV_ID=${ITER%%,*}
+        local DEV_SKU=${ITER##*,}
+
+        if [[ ${OPTION} == "power" ]]
+        then
+            local TYPE="devices.capabilities.on_off"
+            local INSTANCE="powerSwitch"
+            local TST_STT=$(\
+                ${JQ} \
+                    -r '.payload.capabilities.[1].state.value' \
+                    ${CURL_JSON_STT} \
+                )
+            if [[ ${TST_STT} == 1 ]]
+            then
+                local VALUE=0
+            else
+                local VALUE=1
+            fi
+        elif [[ ${OPTION} == "bright" ]]
+        then
+            local TYPE="devices.capabilities.range"
+            local INSTANCE="brightness"
+            local TST_STT=$(\
+                ${JQ} \
+                    -r '.payload.capabilities.[3].state.value' \
+                    ${CURL_JSON_STT} \
+                )
+            if [[ ${BTT} == "reset" ]]
+            then
+                local VALUE=100
+            elif [[ ${BTT} == "dec" ]]
+            then
+                local VALUE=$( expr ${TST_STT} - 20 )
+            elif [[ ${BTT} == "inc" ]]
+            then
+                local VALUE=$( expr ${TST_STT} + 20 )
+            fi
+        elif [[ ${OPTION} == "color" ]]
+        then
+            local TYPE="devices.capabilities.color_setting"
+            local INSTANCE="colorRgb"
+            local SET_COLOR="$( printf %d/\n 0x${COLOR} )"
+            local VALUE="${SET_COLOR}"
+        fi
+
+        ${CURL} \
+            -s -X POST \
+            -H "Content-Type: ${CNT_TYPE}" \
+            -H "${API_KEY}" \
+            --data "$(generate_json_data)" \
+            ${API_URL}/router/api/v1/device/control
+    done
+}

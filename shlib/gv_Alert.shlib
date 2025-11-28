@@ -1,0 +1,36 @@
+gv_Alert()
+{
+    ## alert actions
+    local OPTION=${BTT}
+    gv_List
+    DEV_ID_TTL=$(\
+        ${JQ} \
+            -r '.data.devices[] | (.device + "," + .model)' \
+            ${CURL_JSON_CNT} \
+    )
+
+    for ITER in ${DEV_ID_TTL}
+    do
+        local DEV_ID=${ITER%%,*}
+        local DEV_SKU=${ITER##*,}
+
+        if [[ ${OPTION} == "alert" ]]
+        then
+            local TYPE="devices.capabilities.color_setting"
+            local INSTANCE="colorRgb"
+            local VALUE="16711680"
+        elif [[ ${OPTION} == "clear" ]]
+        then
+            local TYPE="devices.capabilities.color_setting"
+            local INSTANCE="colorTemperatureK"
+            local VALUE="2700"
+        fi
+
+        ${CURL} \
+            -s -X POST \
+            -H "Content-Type: ${CNT_TYPE}" \
+            -H "${API_KEY}" \
+            --data "$(generate_json_data)" \
+            ${API_URL}/router/api/v1/device/control
+    done
+}
