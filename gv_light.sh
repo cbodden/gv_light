@@ -290,10 +290,11 @@ OPTIONS
 
             Hex code must be defined as a 6 character number.
 
-    -i
+    -i [list | detail]
             This option gives you information on all lamps connected in JSON
-            output format.
-
+            output format if you select "detail". If "list" is selected it will
+            just output per line the model and name of each device.
+ 
     -p
             This option toggles power on or off.
 
