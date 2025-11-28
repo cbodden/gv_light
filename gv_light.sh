@@ -354,8 +354,7 @@ do
             ;;
         'c')
             if \
-                [[ ${OPTARG} =~ ^[0-9a-fA-F]{6}$ ]] \
-                && [[ ${#OPTARG} -eq 6 ]]
+                [[ ${OPTARG} =~ ^[0-9a-fA-F]{6}$ ]]
             then
                 readonly COLOR="${OPTARG}"
             else
