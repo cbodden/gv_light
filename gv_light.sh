@@ -63,7 +63,7 @@ main()
     trap "rm -f ${CURL_JSON_CNT} ${CURL_JSON_STT} " 0 1 2 15
 }
 
-gv_List()
+function gv_List()
 {
     ## list all devices, ID's, and model numbers
     ${CURL} \
@@ -72,7 +72,7 @@ gv_List()
         >> ${CURL_JSON_CNT}
 }
 
-gv_State()
+function gv_State()
 {
     ## pull state of specific id
     ${CURL} \
@@ -84,7 +84,7 @@ gv_State()
         >> ${CURL_JSON_STT}
 }
 
-gv_Action()
+function gv_Action()
 {
     ## action function
     local OPTION=${1}
@@ -151,7 +151,7 @@ gv_Action()
     done
 }
 
-gv_Info()
+function gv_Info()
 {
     ## parse info of ID's detailed or short list
     local OPTION=${1}
@@ -187,7 +187,7 @@ gv_Info()
     fi
 }
 
-gv_Alert()
+function gv_Alert()
 {
     ## alert actions
     local OPTION=${BTT}
@@ -322,15 +322,15 @@ clear
 main
 
 ## option selection 
-while getopts ":a:b:c:i:op" OPT
+while getopts ":a:b:c:i:p" OPT
 do
     case "${OPT}" in
         'a')
             if \
-                [[ ${OPTARG} == "alert" ]] \
-                || [[ ${OPTARG} == "clear" ]]
+                [[ ${OPTARG,,} == "alert" ]] \
+                || [[ ${OPTARG,,} == "clear" ]]
             then
-                readonly BTT="${OPTARG}"
+                readonly BTT="${OPTARG,,}"
             else
                 _USAGE \
                     less
@@ -340,11 +340,11 @@ do
             ;;
         'b')
             if \
-                [[ ${OPTARG} == "inc" ]] \
-                || [[ ${OPTARG} == "dec" ]] \
-                || [[ ${OPTARG} == "reset" ]]
+                [[ ${OPTARG,,} == "inc" ]] \
+                || [[ ${OPTARG,,} == "dec" ]] \
+                || [[ ${OPTARG,,} == "reset" ]]
             then
-                readonly BTT="${OPTARG}"
+                readonly BTT="${OPTARG,,}"
             else
                 _USAGE \
                     less
@@ -365,10 +365,10 @@ do
             ;;
         'i')
             if \
-                [[ ${OPTARG} == "detail" ]] \
-                || [[ ${OPTARG} == "list" ]]
+                [[ ${OPTARG,,} == "detail" ]] \
+                || [[ ${OPTARG,,} == "list" ]]
             then
-                readonly BTT="${OPTARG}"
+                readonly BTT="${OPTARG,,}"
             else
                 _USAGE \
                     less
