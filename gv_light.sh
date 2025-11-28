@@ -67,7 +67,7 @@ gv_Count()
 {
     ## count all devices and map ID's and model numbers
     ${CURL} \
-        -H "${API_KEY}" \
+        -s -H "${API_KEY}" \
         ${API_ID_URL} \
         >> ${CURL_JSON_CNT}
 }
@@ -76,7 +76,7 @@ gv_State()
 {
     ## pull state of specific id
     ${CURL} \
-        -X POST \
+        -s -X POST \
         -H "Content-Type: ${CNT_TYPE}" \
         -H "${API_KEY}" \
         --data "$(generate_state_data)" \
@@ -102,8 +102,8 @@ gv_Action()
 
         if [[ ${OPTION} == "power" ]]
         then
-            readonly TYPE="devices.capabilities.on_off"
-            readonly INSTANCE="powerSwitch"
+            local TYPE="devices.capabilities.on_off"
+            local INSTANCE="powerSwitch"
             local TST_STT=$(\
                 ${JQ} \
                     -r '.payload.capabilities.[1].state.value' \
@@ -111,14 +111,14 @@ gv_Action()
                 )
             if [[ ${TST_STT} == 1 ]]
             then
-                readonly VALUE=0
+                local VALUE=0
             else
-                readonly VALUE=1
+                local VALUE=1
             fi
         elif [[ ${OPTION} == "bright" ]]
         then
-            readonly TYPE="devices.capabilities.range"
-            readonly INSTANCE="brightness"
+            local TYPE="devices.capabilities.range"
+            local INSTANCE="brightness"
             local TST_STT=$(\
                 ${JQ} \
                     -r '.payload.capabilities.[3].state.value' \
@@ -126,21 +126,21 @@ gv_Action()
                 )
             if [[ ${BTT} == "reset" ]]
             then
-                readonly VALUE=100
+                local VALUE=100
             elif [[ ${BTT} == "dec" ]]
             then
-                readonly VALUE=$( expr ${TST_STT} - 20 )
+                local VALUE=$( expr ${TST_STT} - 20 )
             elif [[ ${BTT} == "inc" ]]
             then
-                readonly VALUE=$( expr ${TST_STT} + 20 )
+                local VALUE=$( expr ${TST_STT} + 20 )
             fi
         elif [[ ${OPTION} == "color" ]]
         then
-            readonly TYPE="devices.capabilities.color_setting"
-            readonly INSTANCE="colorRgb"
+            local TYPE="devices.capabilities.color_setting"
+            local INSTANCE="colorRgb"
             local SET_COLOR="$( printf %d/\n 0x${COLOR} )"
             ## echo $((16#ff0000))
-            readonly VALUE="${SET_COLOR}"
+            local VALUE="${SET_COLOR}"
         fi
 
         ${CURL} \
@@ -168,7 +168,7 @@ gv_Info()
         local DEV_SKU=${ITER##*,}
 
         ${CURL} \
-            -X POST \
+            -s -X POST \
             -H "Content-Type: ${CNT_TYPE}" \
             -H "${API_KEY}" \
             --data "$(generate_state_data)" \
@@ -195,15 +195,15 @@ gv_Alert()
 
         if [[ ${OPTION} == "alert" ]]
         then
-            readonly TYPE="devices.capabilities.color_setting"
-            readonly INSTANCE="colorRgb"
+            local TYPE="devices.capabilities.color_setting"
+            local INSTANCE="colorRgb"
             ## echo $((16#ff0000))
-            readonly VALUE="16711680"
+            local VALUE="16711680"
         elif [[ ${OPTION} == "clear" ]]
         then
-            readonly TYPE="devices.capabilities.color_setting"
-            readonly INSTANCE="colorTemperatureK"
-            readonly VALUE="2700"
+            local TYPE="devices.capabilities.color_setting"
+            local INSTANCE="colorTemperatureK"
+            local VALUE="2700"
         fi
 
         ${CURL} \
