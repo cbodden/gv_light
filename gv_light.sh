@@ -23,11 +23,12 @@ set -u
 
 main()
 {
-    readonly API_URL="https://openapi.api.govee.com"
     readonly API_ID_URL="https://developer-api.govee.com/v1/devices"
+    readonly API_URL="https://openapi.api.govee.com"
     readonly CNT_TYPE="application/json"
     readonly DATE="$(date +%s)"
     readonly GV_DIR=$(readlink -m $(dirname $0))
+    readonly GV_NAME=$(basename $0)
 
     ## check if conf file exists then source
     ## content : API_KEY="Govee-API-Key:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
@@ -96,13 +97,13 @@ gv_Action()
 
     for ITER in ${DEV_ID_TTL}
     do
-        DEV_ID=${ITER%%,*}
-        DEV_SKU=${ITER##*,}
+        local DEV_ID=${ITER%%,*}
+        local DEV_SKU=${ITER##*,}
 
         if [[ ${OPTION} == "power" ]]
         then
-            local TYPE="devices.capabilities.on_off"
-            local INSTANCE="powerSwitch"
+            readonly TYPE="devices.capabilities.on_off"
+            readonly INSTANCE="powerSwitch"
             local TST_STT=$(\
                 ${JQ} \
                     -r '.payload.capabilities.[1].state.value' \
@@ -110,14 +111,14 @@ gv_Action()
                 )
             if [[ ${TST_STT} == 1 ]]
             then
-                local VALUE=0
+                readonly VALUE=0
             else
-                local VALUE=1
+                readonly VALUE=1
             fi
         elif [[ ${OPTION} == "online" ]]
         then
-            local TYPE="devices.capabilities.online"
-            local INSTANCE="online"
+            readonly TYPE="devices.capabilities.online"
+            readonly INSTANCE="online"
             local TST_STT=$(\
                 ${JQ} \
                     -r '.payload.capabilities.[0].state.value' \
@@ -125,12 +126,12 @@ gv_Action()
                 )
             if [[ ${TST_STT} == false ]]
             then
-                local VALUE=true
+                readonly VALUE=true
             fi
         elif [[ ${OPTION} == "bright" ]]
         then
-            local TYPE="devices.capabilities.range"
-            local INSTANCE="brightness"
+            readonly TYPE="devices.capabilities.range"
+            readonly INSTANCE="brightness"
             local TST_STT=$(\
                 ${JQ} \
                     -r '.payload.capabilities.[3].state.value' \
@@ -138,21 +139,21 @@ gv_Action()
                 )
             if [[ ${BTT} == "reset" ]]
             then
-                local VALUE=100
+                readonly VALUE=100
             elif [[ ${BTT} == "dec" ]]
             then
-                local VALUE=$( expr ${TST_STT} - 20 )
+                readonly VALUE=$( expr ${TST_STT} - 20 )
             elif [[ ${BTT} == "inc" ]]
             then
-                local VALUE=$( expr ${TST_STT} + 20 )
+                readonly VALUE=$( expr ${TST_STT} + 20 )
             fi
         elif [[ ${OPTION} == "color" ]]
         then
-            local TYPE="devices.capabilities.color_setting"
-            local INSTANCE="colorRgb"
+            readonly TYPE="devices.capabilities.color_setting"
+            readonly INSTANCE="colorRgb"
             local SET_COLOR="$( printf %d/\n 0x${COLOR} )"
             ## echo $((16#ff0000))
-            local VALUE="${SET_COLOR}"
+            readonly VALUE="${SET_COLOR}"
         fi
 
         ${CURL} \
@@ -176,8 +177,8 @@ gv_Info()
 
     for ITER in ${DEV_ID_TTL}
     do
-        DEV_ID=${ITER%%,*}
-        DEV_SKU=${ITER##*,}
+        local DEV_ID=${ITER%%,*}
+        local DEV_SKU=${ITER##*,}
 
         ${CURL} \
             -X POST \
@@ -202,20 +203,20 @@ gv_Alert()
 
     for ITER in ${DEV_ID_TTL}
     do
-        DEV_ID=${ITER%%,*}
-        DEV_SKU=${ITER##*,}
+        local DEV_ID=${ITER%%,*}
+        local DEV_SKU=${ITER##*,}
 
         if [[ ${OPTION} == "alert" ]]
         then
-            local TYPE="devices.capabilities.color_setting"
-            local INSTANCE="colorRgb"
+            readonly TYPE="devices.capabilities.color_setting"
+            readonly INSTANCE="colorRgb"
             ## echo $((16#ff0000))
-            local VALUE="16711680"
+            readonly VALUE="16711680"
         elif [[ ${OPTION} == "clear" ]]
         then
-            local TYPE="devices.capabilities.color_setting"
-            local INSTANCE="colorTemperatureK"
-            local VALUE="2700"
+            readonly TYPE="devices.capabilities.color_setting"
+            readonly INSTANCE="colorTemperatureK"
+            readonly VALUE="2700"
         fi
 
         ${CURL} \
@@ -258,6 +259,67 @@ generate_state_data()
 EOF
 }
 
+function _USAGE()
+{
+    clear
+echo -e "
+NAME
+    ${GV_NAME}
+
+SYNOPSIS
+    ${GV_NAME} [OPTION]...
+
+DESCRIPTION
+    This script controls functionality of one or multiple internet connected
+    Govee lights. It can be enabled in to be used on cron, mapped to specific
+    keyboard shortcuts, run from the command line, or added / called from other
+    scripts to change light colors in case of alerts or as notifiers.
+
+OPTIONS
+
+    -a [alert | clear]
+            This option will set all the lights into an alert mode (red if 
+            alert specified) and then clear them if clear is passed.
+
+    -b [inc | dec | reset]
+            This option when passed with either inc (increase), dec (decrease),
+            or reset (set lights back to 100%) will control brightness from 
+            1 - 100 in increments of 20.
+
+    -c [hex color code]
+            This option allows setting all the lights to the same defined 
+            color in hex rgb of format "FFFFFF" with the range of 000001 - 
+            FFFFFF. 
+
+            Hex code must be defined as a 6 character number.
+
+    -i
+            This option gives you information on all lamps connected in JSON
+            output format.
+
+    -p
+            This option toggles power on or off.
+
+Examples
+    Toggle light on / off :
+
+            ./gv_light.sh -p
+
+    Set all lamps to red :
+
+            ./gv_light.sh -c 00ff00
+
+Requirement
+    This script requires that the ".gv_light.conf" be configured with the
+    contents containing your API key (google it) in the format similar to below
+    where the "XXXXXXXXXXXXXXXXXXXXXXXXXX" is replaced with the API key :
+
+            API_KEY="Govee-API-Key:XXXXXXXXXXXXXXXXXXXXXXXXXX"
+
+    This script also requires that both JQ and cURL be installed.
+    "
+}
+
 ## clearing for main options
 clear
 main
@@ -273,7 +335,8 @@ do
             then
                 readonly BTT="${OPTARG}"
             else
-                echo WRONG
+                _USAGE \
+                    less
                 exit 1
             fi
             gv_Alert
@@ -286,7 +349,8 @@ do
             then
                 readonly BTT="${OPTARG}"
             else
-                echo WRONG
+                _USAGE \
+                    less
                 exit 1
             fi
             gv_Action bright
@@ -296,7 +360,8 @@ do
             then
                 readonly COLOR="${OPTARG}"
             else
-                echo WRONG
+                _USAGE \
+                    less
                 exit 1
             fi
             gv_Action color
@@ -311,8 +376,17 @@ do
             gv_Action power
             ;;
         *)
-            echo "WRONG"
+            _USAGE \
+                less
             exit 1
             ;;
     esac
 done
+
+if [[ ${OPTIND} -eq 1 ]]
+then
+    _USAGE \
+        less
+    exit 1
+fi
+shift $((OPTIND-1))
