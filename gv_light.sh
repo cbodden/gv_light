@@ -63,9 +63,9 @@ main()
     trap "rm -f ${CURL_JSON_CNT} ${CURL_JSON_STT} " 0 1 2 15
 }
 
-gv_Count()
+gv_List()
 {
-    ## count all devices and map ID's and model numbers
+    ## list all devices, ID's, and model numbers
     ${CURL} \
         -s -H "${API_KEY}" \
         ${API_ID_URL} \
@@ -88,7 +88,7 @@ gv_Action()
 {
     ## action function
     local OPTION=${1}
-    gv_Count
+    gv_List
     DEV_ID_TTL=$(\
         ${JQ} \
             -r '.data.devices[] | (.device + "," + .model)' \
@@ -157,7 +157,7 @@ gv_Info()
     local OPTION=${1}
     if [[ ${OPTION} == detail ]]
     then
-        gv_Count
+        gv_List
         DEV_ID_TTL=$(\
             ${JQ} \
                 -r '.data.devices[] | (.device + "," + .model)' \
@@ -180,7 +180,7 @@ gv_Info()
     elif [[ ${OPTION} == list ]]
     then
         clear
-        gv_Count
+        gv_List
         ${JQ} \
             -r '.data.devices[] | (.model + " " + .deviceName)' \
             ${CURL_JSON_CNT}
@@ -191,7 +191,7 @@ gv_Alert()
 {
     ## alert actions
     local OPTION=${BTT}
-    gv_Count
+    gv_List
     DEV_ID_TTL=$(\
         ${JQ} \
             -r '.data.devices[] | (.device + "," + .model)' \
