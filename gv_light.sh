@@ -339,12 +339,12 @@ do
                 || [[ ${OPTARG,,} == "clear" ]]
             then
                 readonly BTT="${OPTARG,,}"
+                gv_Alert
             else
                 _USAGE \
                     less
                 exit 1
             fi
-            gv_Alert
             ;;
         'b')
             if \
@@ -353,36 +353,35 @@ do
                 || [[ ${OPTARG,,} == "reset" ]]
             then
                 readonly BTT="${OPTARG,,}"
+                gv_Action bright
             else
                 _USAGE \
-                    less
+                    | less
                 exit 1
             fi
-            gv_Action bright
             ;;
         'c')
             if [[ ${OPTARG} =~ ^[0-9a-fA-F]{6}$ ]]
             then
                 readonly COLOR="${OPTARG}"
+                gv_Action color
             else
                 _USAGE \
-                    less
+                    | less
                 exit 1
             fi
-            gv_Action color
             ;;
         'i')
             if \
                 [[ ${OPTARG,,} == "detail" ]] \
                 || [[ ${OPTARG,,} == "list" ]]
             then
-                readonly BTT="${OPTARG,,}"
+                gv_Info ${OPTARG,,}
             else
                 _USAGE \
-                    less
+                    | less
                 exit 1
             fi
-            gv_Info ${BTT}
             ;;
         'P')
             if \
@@ -390,19 +389,19 @@ do
                 || [[ ${OPTARG,,} == "off" ]]
             then
                 readonly BTT="${OPTARG,,}"
+                gv_Action power
             else
                 _USAGE \
-                    less
+                    | less
                 exit 1
             fi
-            gv_Action power
             ;;
         'p')
             gv_Action power_toggle
             ;;
         *)
             _USAGE \
-                less
+                | less
             exit 1
             ;;
     esac
@@ -411,7 +410,7 @@ done
 if [[ ${OPTIND} -eq 1 ]]
 then
     _USAGE \
-        less
+        | less
     exit 1
 fi
 shift $((OPTIND-1))
