@@ -62,10 +62,7 @@ Examples
 
 Requirement
     This script requires that the ".gv_light.conf" be configured with the
-    contents containing your API key (google it) in the format similar to below
-    where the "XXXXXXXXXXXXXXXXXXXXXXXXXX" is replaced with the API key :
-
-            API_KEY="Govee-API-Key:XXXXXXXXXXXXXXXXXXXXXXXXXX"
+    contents containing your API key (google it) in the format emailed to you.
 
     This script also requires that both JQ and cURL be installed.
 

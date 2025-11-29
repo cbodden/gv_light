@@ -31,10 +31,10 @@ main()
     readonly GV_NAME=$(basename $0)
 
     ## check if conf file exists then source
-    ## content : API_KEY="Govee-API-Key:XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
     if [[ -f "${GV_DIR}/.gv_light.conf" ]]
     then
-        source ${GV_DIR}/.gv_light.conf
+        ##source ${GV_DIR}/.gv_light.conf
+        API_KEY="Govee-API-Key:$(cat ${GV_DIR}/.gv_light.conf)"
     else
         printf "%s\n" \
             ". . .CONF not found. . ."
@@ -308,10 +308,7 @@ Examples
 
 Requirement
     This script requires that the ".gv_light.conf" be configured with the
-    contents containing your API key (google it) in the format similar to below
-    where the "XXXXXXXXXXXXXXXXXXXXXXXXXX" is replaced with the API key :
-
-            API_KEY="Govee-API-Key:XXXXXXXXXXXXXXXXXXXXXXXXXX"
+    contents containing your API key (google it) in the format emeiled to you.
 
     This script also requires that both JQ and cURL be installed.
     "
