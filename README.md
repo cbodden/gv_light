@@ -1,4 +1,4 @@
-# gv_light![Unsupported](https://img.shields.io/badge/development_status-in_progress-green.svg)
+![Unsupported](https://img.shields.io/badge/development_status-in_progress-green.svg)
 
 
 gv_light.sh

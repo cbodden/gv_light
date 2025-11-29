@@ -35,7 +35,7 @@ main()
         [[ -f "${GV_DIR}/.gv_light.key" ]] \
         && [[ $(wc -l <${GV_DIR}/.gv_light.key) -eq 1 ]]
     then
-        API_KEY="Govee-API-Key:$(cat ${GV_DIR}/.gv_light.key)"
+        readonly API_KEY="Govee-API-Key:$(cat ${GV_DIR}/.gv_light.key)"
     else
         printf "%s\n" \
             ". . .KEY file not found. . ."
@@ -139,8 +139,7 @@ function gv_Action()
         then
             local TYPE="devices.capabilities.color_setting"
             local INSTANCE="colorRgb"
-            local SET_COLOR="$( printf %d/\n 0x${COLOR} )"
-            local VALUE="${SET_COLOR}"
+            local VALUE="$( printf %d/\n 0x${COLOR} )"
         fi
 
         ${CURL} \
@@ -351,8 +350,7 @@ do
             gv_Action bright
             ;;
         'c')
-            if \
-                [[ ${OPTARG} =~ ^[0-9a-fA-F]{6}$ ]]
+            if [[ ${OPTARG} =~ ^[0-9a-fA-F]{6}$ ]]
             then
                 readonly COLOR="${OPTARG}"
             else
