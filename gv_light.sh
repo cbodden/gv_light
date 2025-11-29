@@ -118,6 +118,7 @@ function gv_Action()
             else
                 local VALUE=1
             fi
+            JSON_SEND
         local TST_STT=""
         elif [[ ${OPTION} == "power" ]]
         then
@@ -131,6 +132,7 @@ function gv_Action()
             then
                 local VALUE=0
             fi
+            JSON_SEND
         elif [[ ${OPTION} == "bright" ]]
         then
             gv_State
@@ -152,19 +154,14 @@ function gv_Action()
             then
                 local VALUE=$( expr ${TST_STT} + 20 )
             fi
+            JSON_SEND
         elif [[ ${OPTION} == "color" ]]
         then
             local TYPE="devices.capabilities.color_setting"
             local INSTANCE="colorRgb"
             local VALUE="$( printf %d 0x${COLOR} )"
+            JSON_SEND
         fi
-
-        ${CURL} \
-            -s -X POST \
-            -H "Content-Type: ${CNT_TYPE}" \
-            -H "${API_KEY}" \
-            --data "$(generate_json_data)" \
-            ${API_URL}/router/api/v1/device/control
     done
 }
 
@@ -224,19 +221,64 @@ function gv_Alert()
         then
             local INSTANCE="colorRgb"
             local VALUE="16711680"
+            JSON_SEND
         elif [[ ${OPTION} == "clear" ]]
         then
             local INSTANCE="colorTemperatureK"
             local VALUE="2700"
+            JSON_SEND
         fi
-
-        ${CURL} \
-            -s -X POST \
-            -H "Content-Type: ${CNT_TYPE}" \
-            -H "${API_KEY}" \
-            --data "$(generate_json_data)" \
-            ${API_URL}/router/api/v1/device/control
     done
+}
+
+function gv_Movie()
+{
+    ## enable or disable movie mode
+    local OPTION=${BTT}
+    gv_List
+    DEV_ID_TTL=$(\
+        ${JQ} \
+            -r '.data.devices[] | (.device + "," + .model)' \
+            ${CURL_JSON_CNT} \
+    )
+
+    for ITER in ${DEV_ID_TTL}
+    do
+        local DEV_ID=${ITER%%,*}
+        local DEV_SKU=${ITER##*,}
+
+        if [[ ${OPTION} == "enable" ]]
+        then
+            local TYPE="devices.capabilities.color_setting"
+            local INSTANCE="colorRgb"
+            local VALUE="139"
+            JSON_SEND
+            local TYPE="devices.capabilities.range"
+            local INSTANCE="brightness"
+            local VALUE="50"
+            JSON_SEND
+        elif [[ ${OPTION} == "disable" ]]
+        then
+            local TYPE="devices.capabilities.color_setting"
+            local INSTANCE="colorTemperatureK"
+            local VALUE="2700"
+            JSON_SEND
+            local TYPE="devices.capabilities.range"
+            local INSTANCE="brightness"
+            local VALUE="80"
+            JSON_SEND
+        fi
+    done
+}
+
+JSON_SEND()
+{
+    ${CURL} \
+        -s -X POST \
+        -H "Content-Type: ${CNT_TYPE}" \
+        -H "${API_KEY}" \
+        --data "$(generate_json_data)" \
+        ${API_URL}/router/api/v1/device/control
 }
 
 generate_json_data()
@@ -334,7 +376,7 @@ clear
 main
 
 ## option selection 
-while getopts ":a:b:c:i:P:p" OPT
+while getopts ":a:b:c:i:m:P:p" OPT
 do
     case "${OPT}" in
         'a')
@@ -384,6 +426,19 @@ do
             else
                 _USAGE \
                     | less
+                exit 1
+            fi
+            ;;
+        'm')
+            if \
+                [[ ${OPTARG,,} == "enable" ]] \
+                || [[ ${OPTARG,,} == "disable" ]]
+            then
+                readonly BTT="${OPTARG,,}"
+                gv_Movie
+            else
+                _USAGE \
+                    less
                 exit 1
             fi
             ;;
