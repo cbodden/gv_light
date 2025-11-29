@@ -101,7 +101,7 @@ function gv_Action()
         local DEV_ID=${ITER%%,*}
         local DEV_SKU=${ITER##*,}
 
-        if [[ ${OPTION} == "power" ]]
+        if [[ ${OPTION} == "power_toggle" ]]
         then
             local TYPE="devices.capabilities.on_off"
             local INSTANCE="powerSwitch"
@@ -115,6 +115,17 @@ function gv_Action()
                 local VALUE=0
             else
                 local VALUE=1
+            fi
+        elif [[ ${OPTION} == "power" ]]
+        then
+            local TYPE="devices.capabilities.on_off"
+            local INSTANCE="powerSwitch"
+            if [[ ${BTT} == "on" ]]
+            then
+                local VALUE=1
+            elif [[ ${BTT} == "off" ]]
+            then
+                local VALUE=0
             fi
         elif [[ ${OPTION} == "bright" ]]
         then
@@ -319,7 +330,7 @@ clear
 main
 
 ## option selection 
-while getopts ":a:b:c:i:p" OPT
+while getopts ":a:b:c:i:P:p" OPT
 do
     case "${OPT}" in
         'a')
@@ -373,8 +384,21 @@ do
             fi
             gv_Info ${BTT}
             ;;
-        'p')
+        'P')
+            if \
+                [[ ${OPTARG,,} == "on" ]] \
+                || [[ ${OPTARG,,} == "off" ]]
+            then
+                readonly BTT="${OPTARG,,}"
+            else
+                _USAGE \
+                    less
+                exit 1
+            fi
             gv_Action power
+            ;;
+        'p')
+            gv_Action power_toggle
             ;;
         *)
             _USAGE \
