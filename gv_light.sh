@@ -110,6 +110,7 @@ function gv_Action()
                     -r '.payload.capabilities.[1].state.value' \
                     ${CURL_JSON_STT} \
                 )
+
             if [[ ${TST_STT} == 1 ]]
             then
                 local VALUE=0
@@ -120,6 +121,7 @@ function gv_Action()
         then
             local TYPE="devices.capabilities.on_off"
             local INSTANCE="powerSwitch"
+
             if [[ ${BTT} == "on" ]]
             then
                 local VALUE=1
@@ -136,6 +138,7 @@ function gv_Action()
                     -r '.payload.capabilities.[3].state.value' \
                     ${CURL_JSON_STT} \
                 )
+
             if [[ ${BTT} == "reset" ]]
             then
                 local VALUE=100
@@ -190,7 +193,6 @@ function gv_Info()
         done
     elif [[ ${OPTION} == list ]]
     then
-        clear
         gv_List
         ${JQ} \
             -r '.data.devices[] | (.model + " " + .deviceName)' \
@@ -213,15 +215,14 @@ function gv_Alert()
     do
         local DEV_ID=${ITER%%,*}
         local DEV_SKU=${ITER##*,}
+        local TYPE="devices.capabilities.color_setting"
 
         if [[ ${OPTION} == "alert" ]]
         then
-            local TYPE="devices.capabilities.color_setting"
             local INSTANCE="colorRgb"
             local VALUE="16711680"
         elif [[ ${OPTION} == "clear" ]]
         then
-            local TYPE="devices.capabilities.color_setting"
             local INSTANCE="colorTemperatureK"
             local VALUE="2700"
         fi
