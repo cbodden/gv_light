@@ -82,7 +82,7 @@ function gv_State()
         -H "${API_KEY}" \
         --data "$(generate_state_data)" \
         ${API_URL}/router/api/v1/device/state \
-        >> ${CURL_JSON_STT}
+        > ${CURL_JSON_STT}
 }
 
 function gv_Action()
@@ -103,6 +103,7 @@ function gv_Action()
 
         if [[ ${OPTION} == "power_toggle" ]]
         then
+            gv_State
             local TYPE="devices.capabilities.on_off"
             local INSTANCE="powerSwitch"
             local TST_STT=$(\
@@ -117,6 +118,7 @@ function gv_Action()
             else
                 local VALUE=1
             fi
+        local TST_STT=""
         elif [[ ${OPTION} == "power" ]]
         then
             local TYPE="devices.capabilities.on_off"
@@ -131,6 +133,7 @@ function gv_Action()
             fi
         elif [[ ${OPTION} == "bright" ]]
         then
+            gv_State
             local TYPE="devices.capabilities.range"
             local INSTANCE="brightness"
             local TST_STT=$(\
@@ -153,7 +156,7 @@ function gv_Action()
         then
             local TYPE="devices.capabilities.color_setting"
             local INSTANCE="colorRgb"
-            local VALUE="$( printf %d/\n 0x${COLOR} )"
+            local VALUE="$( printf %d 0x${COLOR} )"
         fi
 
         ${CURL} \
