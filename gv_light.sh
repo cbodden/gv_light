@@ -30,14 +30,13 @@ main()
     readonly GV_DIR=$(readlink -m $(dirname $0))
     readonly GV_NAME=$(basename $0)
 
-    ## check if conf file exists then source
-    if [[ -f "${GV_DIR}/.gv_light.conf" ]]
+    ## check if api key file exists and use api key if so
+    if [[ -f "${GV_DIR}/.gv_light.key" ]]
     then
-        ##source ${GV_DIR}/.gv_light.conf
-        API_KEY="Govee-API-Key:$(cat ${GV_DIR}/.gv_light.conf)"
+        API_KEY="Govee-API-Key:$(cat ${GV_DIR}/.gv_light.key)"
     else
         printf "%s\n" \
-            ". . .CONF not found. . ."
+            ". . .KEY file not found. . ."
         exit 1
     fi
 

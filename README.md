@@ -61,7 +61,7 @@ Examples
             ./gv_light.sh -c 00ff00
 
 Requirement
-    This script requires that the ".gv_light.conf" be configured with the
+    This script requires that the ".gv_light.key" be configured with the
     contents containing your API key (google it) in the format emailed to you.
 
     This script also requires that both JQ and cURL be installed.
