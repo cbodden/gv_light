@@ -90,6 +90,6 @@ License and Author
 Copyright (c) 2025, cesar@poa.nyc
 All rights reserved.
 
-This source code is licensed under the BSD-style license
+This source code is licensed under the Unlicense license
 found in the LICENSE file in the root directory of this
 source tree.
