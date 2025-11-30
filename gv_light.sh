@@ -11,7 +11,7 @@
 #        AUTHOR: Cesar Bodden (), cesar@poa.nyc
 #  ORGANIZATION: pissedoffadmins.com
 #       CREATED: 25-NOV-25
-#      REVISION: 2
+#      REVISION: 3
 #===============================================================================
 
 LC_ALL=C
@@ -119,7 +119,6 @@ function gv_Action()
                 local VALUE=1
             fi
             JSON_SEND
-        local TST_STT=""
         elif [[ ${OPTION} == "power" ]]
         then
             local TYPE="devices.capabilities.on_off"
@@ -271,7 +270,33 @@ function gv_Movie()
     done
 }
 
-JSON_SEND()
+function gv_Nightlight()
+{
+    ## nightlight mode
+    gv_List
+    DEV_ID_TTL=$(\
+        ${JQ} \
+            -r '.data.devices[] | (.device + "," + .model)' \
+            ${CURL_JSON_CNT} \
+    )
+
+    for ITER in ${DEV_ID_TTL}
+    do
+        local DEV_ID=${ITER%%,*}
+        local DEV_SKU=${ITER##*,}
+
+       local TYPE="devices.capabilities.color_setting"
+       local INSTANCE="colorRgb"
+       local VALUE="8209920"
+       JSON_SEND
+       local TYPE="devices.capabilities.range"
+       local INSTANCE="brightness"
+       local VALUE="10"
+       JSON_SEND
+    done
+}
+
+function JSON_SEND()
 {
     ${CURL} \
         -s -X POST \
@@ -376,7 +401,7 @@ clear
 main
 
 ## option selection 
-while getopts ":a:b:c:i:m:P:p" OPT
+while getopts ":a:b:c:i:m:nP:p" OPT
 do
     case "${OPT}" in
         'a')
@@ -441,6 +466,9 @@ do
                     less
                 exit 1
             fi
+            ;;
+        'n')
+            gv_Nightlight
             ;;
         'P')
             if \
