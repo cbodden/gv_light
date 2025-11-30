@@ -4,7 +4,7 @@
 gv_light.sh
 ====
 
-    gv_light is a script to control the Govee internet collected lights from
+    gv_light is a script to control the Govee internet connected lights from
     the linux command line. It offers multiple functions and can be triggered
     from multiple places.
 
