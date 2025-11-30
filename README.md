@@ -8,6 +8,16 @@ gv_light.sh
     the linux command line. It offers multiple functions and can be triggered
     from multiple places.
 
+
+Govee lights used for testing
+----
+
+Model     | Description |
+:---------| :-----------|
+H6076     | Smart Floor Lamp Basic |
+H6056     | Flow Plus Light Bars |
+
+
 Usage
 ----
 
